@@ -1,0 +1,45 @@
+{
+  "currency": {
+    "code": "INR"
+  },
+  "exchangesWithSecurityTypes": {
+    "BSE": [
+      {"code": "EQUITY"}
+    ]
+  },
+  "portfolioInvestmentAmountLimit": 123456789,
+  "constituentRules": [
+    {
+      "type": "LoopPortfolioRule",
+      "loopLabel": "loopRebalanceOverall1",
+      "maxIterations": 500,
+      "portfolioRules": [
+        {
+          "type": "FiltersRule",
+          "rootFilter": {
+            "type": "CompoundFilter",
+            "filters": [
+              {
+                "type": "ExpressionFilter",
+                "expression": {
+                  "type": "ComparisonExpression",
+                  "leftSide": {
+                    "name": "listing_date",
+                    "type": "java.time.LocalDate"
+                  },
+                  "operator": ">=",
+                  "rightSide": {
+                    "type": "java.time.LocalDate",
+                    "literalValue": "2000-01-01"
+                  }
+                }
+              }
+            ],
+            "operator": "AND"
+          }
+        }
+      ]
+    }
+  ],
+  "portfolioInvestmentAmountLimitUpdated": true
+}
