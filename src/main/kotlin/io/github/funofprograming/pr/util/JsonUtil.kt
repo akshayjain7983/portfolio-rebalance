@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 object JsonMapperProvider {
 
-    val mapperReference:AtomicReference<JsonMapper> = AtomicReference<JsonMapper>()
+    private val mapperReference:AtomicReference<JsonMapper> = AtomicReference<JsonMapper>()
 
     fun getJsonMapper():JsonMapper {
         if(mapperReference.get() == null){
@@ -95,34 +95,34 @@ fun <T> buildJsonMapKeyDeserializer(handledType: Class<T>?, jsonMapKeyDeserializ
     }
 }
 
-inline fun toJson(inObject: Any?, objectMapper: ObjectMapper = JsonMapperProvider.getJsonMapper()): String {
+inline fun toJson(inObject: Any?, jsonMapper: JsonMapper = JsonMapperProvider.getJsonMapper()): String {
     try {
-        return objectMapper.writeValueAsString(inObject)
+        return jsonMapper.writeValueAsString(inObject)
     } catch (e: JsonProcessingException) {
         throw RuntimeException(e)
     }
 }
 
-inline fun <reified T> fromJson(json: String?, objectMapper: ObjectMapper = JsonMapperProvider.getJsonMapper()): T? {
+inline fun <reified T> fromJson(json: String?, jsonMapper: JsonMapper = JsonMapperProvider.getJsonMapper()): T? {
     try {
         var jsonToUse = adjustJsonForParsingTemporal<T>(json)
-        return objectMapper.readValue<T>(jsonToUse ?: "")
+        return jsonMapper.readValue<T>(jsonToUse ?: "")
     } catch (e: JsonProcessingException) {
         throw RuntimeException(e)
     }
 }
 
-inline fun <reified T> viaJson(source: Any?, objectMapper: ObjectMapper = JsonMapperProvider.getJsonMapper()): T {
-    return objectMapper.convertValue<T>(source)
+inline fun <reified T> viaJson(source: Any?, jsonMapper: JsonMapper = JsonMapperProvider.getJsonMapper()): T {
+    return jsonMapper.convertValue<T>(source)
 }
 
 inline fun <reified T> adjustJsonForParsingTemporal(json: String?): String? {
 
     var jsonToUse = json
 
-    if(java.time.temporal.Temporal::class.java.isAssignableFrom(T::class.java)) { //for java dates jackson wants extra "" inside the string
-        jsonToUse = if (jsonToUse?.startsWith("\"") != true) "\""+jsonToUse else json
-        jsonToUse = if (jsonToUse?.endsWith("\"") != true) jsonToUse+"\"" else json
+    if(java.time.temporal.Temporal::class.java.isAssignableFrom(T::class.java)) { //for dates jackson wants extra "" inside the string
+        jsonToUse = if (jsonToUse?.startsWith("\"") != true) "\""+jsonToUse else jsonToUse
+        jsonToUse = if (jsonToUse?.endsWith("\"") != true) jsonToUse+"\"" else jsonToUse
     }
     return jsonToUse
 }

@@ -1,4 +1,4 @@
-package io.github.funofprograming.pr.rule
+package io.github.funofprograming.pr.rule.filter
 
 import org.jetbrains.kotlinx.dataframe.DataRow
 import org.jetbrains.kotlinx.dataframe.api.column

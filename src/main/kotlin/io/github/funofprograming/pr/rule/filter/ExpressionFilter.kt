@@ -1,8 +1,7 @@
-package io.github.funofprograming.pr.rule
+package io.github.funofprograming.pr.rule.filter
 
-import org.jetbrains.kotlinx.dataframe.DataFrame
+import io.github.funofprograming.pr.rule.Expression
 import org.jetbrains.kotlinx.dataframe.DataRow
-import org.jetbrains.kotlinx.dataframe.api.filter
 import java.util.*
 
 class ExpressionFilter(): RelaxableFilter() {

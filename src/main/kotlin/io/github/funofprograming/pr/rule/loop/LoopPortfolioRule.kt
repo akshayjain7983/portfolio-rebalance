@@ -1,7 +1,8 @@
-package io.github.funofprograming.pr.rule
+package io.github.funofprograming.pr.rule.loop
 
 import REBAL_LOOP_RULE_STATES_KEY
 import io.github.funofprograming.context.impl.getGlobalContext
+import io.github.funofprograming.pr.rule.PortfolioRule
 import io.github.funofprograming.pr.util.isLoopContinueNextIteration
 import io.github.funofprograming.pr.util.isLoopInnermost
 import org.jetbrains.kotlinx.dataframe.DataFrame
@@ -32,7 +33,7 @@ class LoopPortfolioRule: PortfolioRule {
             rebalanceContext?.fetch(REBAL_LOOP_RULE_STATES_KEY)?.peek()?.currentIteration?.set(iteration)
             rebalanceContext?.fetch(REBAL_LOOP_RULE_STATES_KEY)?.peek()?.continueNextIteration?.set(false)
 
-            for(pr:PortfolioRule in portfolioRules ?: emptyList()) {
+            for(pr: PortfolioRule in portfolioRules ?: emptyList()) {
 
                 securitiesLooped = pr.execute(rebalanceId, securitiesLooped)
 
@@ -58,6 +59,4 @@ class LoopPortfolioRule: PortfolioRule {
         }
         rebalanceContext?.fetch(REBAL_LOOP_RULE_STATES_KEY)?.add(LoopState(loopLabel, maxIterations, AtomicInteger(0), AtomicBoolean(false)))
     }
-
-    data class LoopState(val loopLabel:String?, val maxIterations:Int?, val currentIteration:AtomicInteger, val continueNextIteration:AtomicBoolean)
 }

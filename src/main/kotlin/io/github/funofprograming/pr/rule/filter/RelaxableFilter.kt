@@ -1,8 +1,8 @@
-package io.github.funofprograming.pr.rule
+package io.github.funofprograming.pr.rule.filter
 
 import REBAL_RELAXATION_COND_KEY
 import io.github.funofprograming.context.impl.getGlobalContext
-import org.jetbrains.kotlinx.dataframe.DataFrame
+import io.github.funofprograming.pr.rule.RelaxationCondition
 import org.jetbrains.kotlinx.dataframe.DataRow
 import java.util.*
 
@@ -16,11 +16,11 @@ abstract class RelaxableFilter(): MinRunLockableFilter() {
         return filtered
     }
 
-    fun getRelaxedFilter(rebalanceId: UUID):Filter? {
+    fun getRelaxedFilter(rebalanceId: UUID): Filter? {
 
         val rebalanceContext = getGlobalContext(rebalanceId.toString())
         val relaxationCondition = rebalanceContext?.fetch(REBAL_RELAXATION_COND_KEY)
-        return relaxedFilters?.get(relaxationCondition)
+        return relaxationCondition?.let { relaxedFilters?.get(relaxationCondition) }
     }
 
     abstract fun filterNormal(rebalanceId: UUID, row: DataRow<*>): Boolean

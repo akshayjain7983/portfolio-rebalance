@@ -1,5 +1,6 @@
-package io.github.funofprograming.pr.rule
+package io.github.funofprograming.pr.rule.filter
 
+import io.github.funofprograming.pr.rule.BooleanOperator
 import org.jetbrains.kotlinx.dataframe.DataRow
 import java.util.*
 

@@ -9,6 +9,8 @@ import io.github.funofprograming.pr.configuration.PortfolioConfiguration
 import io.github.funofprograming.pr.configuration.PortfolioRebalanceExecutor
 import io.github.funofprograming.pr.rule.PortfolioRuleExecutor
 import io.github.funofprograming.pr.util.JsonMapperProvider
+import io.github.funofprograming.pr.util.registerAllMarketValueCalculatorObjects
+import io.github.funofprograming.pr.util.registerAllSecurityWeightCalculatorObjects
 import io.github.funofprograming.pr.vo.PortfolioRebalanceCommand
 import kotlinx.datetime.LocalDate
 import org.jetbrains.kotlinx.dataframe.DataFrame
@@ -29,6 +31,8 @@ class TestPortfolioRebalance {
     @BeforeEach
     fun loadConfigAndData():Unit {
 
+        registerAllMarketValueCalculatorObjects()
+        registerAllSecurityWeightCalculatorObjects()
         val prcIs = TestPortfolioRebalance::class.java.getResourceAsStream(prConfigTestFileName)
         val prcId = TestPortfolioRebalance::class.java.getResourceAsStream(prInputSecuritiesTestFileName)
         portfolioConfiguration = jsonMapper.readValue(prcIs)

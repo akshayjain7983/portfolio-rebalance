@@ -1,4 +1,4 @@
-package io.github.funofprograming.pr.rule
+package io.github.funofprograming.pr.rule.filter
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo

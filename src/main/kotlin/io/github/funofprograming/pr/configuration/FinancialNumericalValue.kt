@@ -1,6 +1,6 @@
 package io.github.funofprograming.pr.configuration
 
-import DEFAULT_FNV_PRECISION
+import DEFAULT_PRECISION
 import java.math.BigDecimal
 import java.math.MathContext
 
@@ -44,7 +44,7 @@ class FinancialNumericalValue : Number {
         return of(inflationAdjusted, valNominal, valReal)
     }
 
-    operator fun times(multiplicand: FinancialNumericalValue): FinancialNumericalValue = times(multiplicand, DEFAULT_FNV_PRECISION)
+    operator fun times(multiplicand: FinancialNumericalValue): FinancialNumericalValue = times(multiplicand, DEFAULT_PRECISION)
 
     fun times(multiplicand: FinancialNumericalValue, precision: MathContext): FinancialNumericalValue {
 
@@ -54,7 +54,7 @@ class FinancialNumericalValue : Number {
         return of(inflationAdjusted, valNominal, valReal)
     }
 
-    operator fun div(divisor: FinancialNumericalValue): FinancialNumericalValue = div(divisor, DEFAULT_FNV_PRECISION)
+    operator fun div(divisor: FinancialNumericalValue): FinancialNumericalValue = div(divisor, DEFAULT_PRECISION)
 
     fun div(divisor: FinancialNumericalValue, precision: MathContext): FinancialNumericalValue {
         val valNominal:BigDecimal = valueNominal.divide(divisor.valueNominal, precision)

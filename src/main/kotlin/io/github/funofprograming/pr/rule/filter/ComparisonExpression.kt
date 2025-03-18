@@ -1,14 +1,12 @@
-package io.github.funofprograming.pr.rule
+package io.github.funofprograming.pr.rule.filter
 
-import io.github.funofprograming.pr.util.fromJson
-import io.github.funofprograming.pr.util.getAccessor
+import io.github.funofprograming.pr.rule.Attribute
+import io.github.funofprograming.pr.rule.ComparisonOperator
+import io.github.funofprograming.pr.rule.Expression
 import io.github.funofprograming.pr.util.getObject
 import kotlinx.datetime.*
 import org.jetbrains.kotlinx.dataframe.DataRow
-import org.jetbrains.kotlinx.dataframe.columns.ColumnAccessor
-import org.jetbrains.kotlinx.dataframe.columns.ColumnReference
 import java.math.BigDecimal
-import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
 class ComparisonExpression(
@@ -33,19 +31,34 @@ class ComparisonExpression(
             is String -> compareValues(left, right)
             is Number -> compareValues(BigDecimal(left.toString()), BigDecimal(right.toString()))
             is LocalDate -> {
-                val leftDate = left.toJavaLocalDate().atStartOfDay().toInstant(ZoneOffset.UTC)
-                val rightDate = (if(right is LocalDate) right.toJavaLocalDate() else (right as java.time.LocalDate)).atStartOfDay().toInstant(ZoneOffset.UTC)
+                val leftDate = left.atStartOfDayIn(TimeZone.UTC)
+                val rightDate = (if(right is java.time.LocalDate) right.toKotlinLocalDate() else (right as LocalDate)).atStartOfDayIn(TimeZone.UTC)
+                return compareValues(leftDate, rightDate)
+            }
+            is java.time.LocalDate -> {
+                val leftDate = left.toKotlinLocalDate().atStartOfDayIn(TimeZone.UTC)
+                val rightDate = (if(right is java.time.LocalDate) right.toKotlinLocalDate() else (right as LocalDate)).atStartOfDayIn(TimeZone.UTC)
                 return compareValues(leftDate, rightDate)
             }
             is LocalDateTime -> {
-                val leftDate = left.toJavaLocalDateTime().toInstant(ZoneOffset.UTC)
-                val rightDate = (if(right is LocalDateTime) right.toJavaLocalDateTime() else (right as java.time.LocalDateTime)).toInstant(ZoneOffset.UTC)
+                val leftDate = left.toInstant(TimeZone.UTC)
+                val rightDate = (if(right is java.time.LocalDateTime) right.toKotlinLocalDateTime() else (right as LocalDateTime)).toInstant(TimeZone.UTC)
+                return compareValues(leftDate, rightDate)
+            }
+            is java.time.LocalDateTime -> {
+                val leftDate = left.toKotlinLocalDateTime().toInstant(TimeZone.UTC)
+                val rightDate = (if(right is java.time.LocalDateTime) right.toKotlinLocalDateTime() else (right as LocalDateTime)).toInstant(TimeZone.UTC)
                 return compareValues(leftDate, rightDate)
             }
             is ZonedDateTime -> compareValues(left, right)
             is Instant -> {
-                val leftDate = left.toJavaInstant()
-                val rightDate = (if(right is Instant) right.toJavaInstant() else (right as java.time.Instant))
+                val leftDate = left
+                val rightDate = (if(right is java.time.Instant) right.toKotlinInstant() else (right as Instant))
+                compareValues(leftDate, rightDate)
+            }
+            is java.time.Instant -> {
+                val leftDate = left.toKotlinInstant()
+                val rightDate = (if(right is java.time.Instant) right.toKotlinInstant() else (right as Instant))
                 compareValues(leftDate, rightDate)
             }
             else -> throw IllegalArgumentException("Unsupported type for comparison: ${left!!::class}")

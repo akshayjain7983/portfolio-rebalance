@@ -12,7 +12,7 @@
     {
       "type": "LoopPortfolioRule",
       "loopLabel": "loopRebalanceOverall1",
-      "maxIterations": 500,
+      "maxIterations": 1,
       "portfolioRules": [
         {
           "type": "FiltersRule",
@@ -37,6 +37,20 @@
             ],
             "operator": "AND"
           }
+        },
+        {
+          "type": "LoopPortfolioRule",
+          "loopLabel": "loopWeightCapping1",
+          "maxIterations": 1,
+          "portfolioRules": [
+            {
+              "type": "WeightCalculationRule",
+              "securityWeightCalculators": {
+                "MarketValueSecurityWeightCalculator": "EquitiesMarketValueCalculator"
+              },
+              "rebalanceWeightAttributeName": "market_value_weight"
+            }
+          ]
         }
       ]
     }
