@@ -11,6 +11,6 @@ data class PortfolioRebalance(
     val rebalanceMetrics: PortfolioRebalanceMetrics,
     var investmentMarketValue: BigDecimal?,
     var portfolioCash: BigDecimal?,
-    var portfolioConstituents: DataFrame<PortfolioConstituent>?,
-    var portfolioRebalanceTransactions: DataFrame<PortfolioRebalanceTransaction>?
+    var portfolioConstituents: DataFrame<*>?,
+    var portfolioRebalanceTransactions: DataFrame<*>?
 )

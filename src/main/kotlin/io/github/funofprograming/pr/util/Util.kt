@@ -3,14 +3,18 @@ package io.github.funofprograming.pr.util
 import DEFAULT_PRECISION
 import MARKET_VALUE_CALCULATOR_REGISTRY
 import REBAL_LOOP_RULE_STATES_KEY
+import REGISTERED_RULE_REGISTRY
 import SECURITY_WEIGHT_CALCULATOR_REGISTRY
 import io.github.funofprograming.context.Key
 import io.github.funofprograming.context.impl.getGlobalContext
 import io.github.funofprograming.pr.rule.Attribute
+import io.github.funofprograming.pr.rule.RegistrableRule
+import io.github.funofprograming.pr.rule.derived.DerivedDataRule
 import io.github.funofprograming.pr.rule.mv.EquitiesMarketValueCalculator
 import io.github.funofprograming.pr.rule.mv.SecurityMarketValueCalculator
 import io.github.funofprograming.pr.rule.weight.MarketValueSecurityWeightCalculator
 import io.github.funofprograming.pr.rule.weight.SecurityWeightCalculator
+import io.github.funofprograming.pr.vo.PortfolioRebalanceCommand
 import org.jetbrains.kotlinx.dataframe.DataFrame
 import org.jetbrains.kotlinx.dataframe.DataRow
 import org.jetbrains.kotlinx.dataframe.api.add
@@ -105,6 +109,13 @@ fun registerAllMarketValueCalculatorObjects() {
     registerMarketValueCalculator(EquitiesMarketValueCalculator)
 }
 
+fun PortfolioRebalanceCommand.registerSecurityWeightCalculator(securityWeightCalculator: SecurityWeightCalculator) = io.github.funofprograming.pr.util.registerSecurityWeightCalculator(securityWeightCalculator)
+fun PortfolioRebalanceCommand.deregisterSecurityWeightCalculator(securityWeightCalculatorId: String) = io.github.funofprograming.pr.util.deregisterSecurityWeightCalculator(securityWeightCalculatorId)
+fun PortfolioRebalanceCommand.registerMarketValueCalculator(marketValueCalculator: SecurityMarketValueCalculator) = io.github.funofprograming.pr.util.registerMarketValueCalculator(marketValueCalculator)
+fun PortfolioRebalanceCommand.deregisterMarketValueCalculator(marketValueCalculatorId: String) = io.github.funofprograming.pr.util.deregisterMarketValueCalculator(marketValueCalculatorId)
+fun PortfolioRebalanceCommand.registerPortfolioRule(registrableRule: RegistrableRule) = io.github.funofprograming.pr.util.registerPortfolioRule(registrableRule)
+fun PortfolioRebalanceCommand.deregisterPortfolioRule(registrableRuleId: String) = io.github.funofprograming.pr.util.deregisterPortfolioRule(registrableRuleId)
+
 fun registerSecurityWeightCalculator(securityWeightCalculator: SecurityWeightCalculator) =
     SECURITY_WEIGHT_CALCULATOR_REGISTRY?.add(Key.of<SecurityWeightCalculator>(securityWeightCalculator.securityWeightCalculatorId()), securityWeightCalculator)
 
@@ -117,9 +128,17 @@ fun registerMarketValueCalculator(marketValueCalculator: SecurityMarketValueCalc
 fun deregisterMarketValueCalculator(marketValueCalculatorId: String) =
     MARKET_VALUE_CALCULATOR_REGISTRY?.erase(Key.of<SecurityMarketValueCalculator>(marketValueCalculatorId))
 
+fun registerPortfolioRule(registrableRule: RegistrableRule) =
+    REGISTERED_RULE_REGISTRY?.add(Key.of<RegistrableRule>(registrableRule.registerableRuleId()), registrableRule)
+
+fun deregisterPortfolioRule(registerableRuleId: String) =
+    REGISTERED_RULE_REGISTRY?.erase(Key.of<RegistrableRule>(registerableRuleId))
+
 fun getSecurityWeightCalculator(securityWeightCalculatorId: String): SecurityWeightCalculator? = SECURITY_WEIGHT_CALCULATOR_REGISTRY?.fetch(Key.of<SecurityWeightCalculator>(securityWeightCalculatorId))
 
-fun getMarketValueCalculator(marketValueCalculatorId: String): SecurityMarketValueCalculator? = MARKET_VALUE_CALCULATOR_REGISTRY?.erase(Key.of<SecurityMarketValueCalculator>(marketValueCalculatorId))
+fun getMarketValueCalculator(marketValueCalculatorId: String): SecurityMarketValueCalculator? = MARKET_VALUE_CALCULATOR_REGISTRY?.fetch(Key.of<SecurityMarketValueCalculator>(marketValueCalculatorId))
+
+fun getRegisteredPortfolioRule(registerableRuleId: String): RegistrableRule? = REGISTERED_RULE_REGISTRY?.fetch(Key.of<RegistrableRule>(registerableRuleId))
 
 inline fun BigDecimal.safeDivide(divisor: BigDecimal):BigDecimal = if(divisor == BigDecimal.ZERO) BigDecimal.ZERO else this.divide(divisor, DEFAULT_PRECISION)
 

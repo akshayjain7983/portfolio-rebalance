@@ -1,4 +1,5 @@
 {
+  "portfolioConfigurationStartDate": "2018-09-01",
   "currency": {
     "code": "INR"
   },
@@ -8,6 +9,8 @@
     ]
   },
   "portfolioInvestmentAmountLimit": 123456789,
+  "portfolioCurrentSizeCalculator": "EquitiesMarketValueCalculator",
+  "portfolioCurrentSizeAttribute": "market_value",
   "constituentRules": [
     {
       "type": "LoopPortfolioRule",

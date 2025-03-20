@@ -14,7 +14,8 @@ import java.util.*
 @JsonSubTypes(
     JsonSubTypes.Type(name = "LoopPortfolioRule", value = LoopPortfolioRule::class),
     JsonSubTypes.Type(name = "FiltersRule", value = FiltersRule::class),
-    JsonSubTypes.Type(name = "WeightCalculationRule", value = WeightCalculationRule::class)
+    JsonSubTypes.Type(name = "WeightCalculationRule", value = WeightCalculationRule::class),
+    JsonSubTypes.Type(name = "RegisteredRule", value = RegisteredRule::class),
 )
 interface PortfolioRule {
 

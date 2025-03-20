@@ -16,10 +16,10 @@ object EquitiesMarketValueCalculator: SecurityMarketValueCalculator {
         val rbPrice by column<BigDecimal>("rebalance_price")
         val closePrice by column<Number>("close_price")
         val rbUnits by column<Long>("rebalance_units")
-        val totalOutstandingShares by column<Number>("total_outstanding_shares")
+        val units by column<Number>("units")
         val marketValue by column<BigDecimal>("market_value")
         securitiesResult = securitiesResult?.addOrUpdateColumnInDataFrame(rbPrice) { row, _ -> BigDecimal.valueOf(row[closePrice].toDouble()) }
-        securitiesResult = securitiesResult?.addOrUpdateColumnInDataFrame(rbUnits) { row, _ -> row[totalOutstandingShares].toLong() }
+        securitiesResult = securitiesResult?.addOrUpdateColumnInDataFrame(rbUnits) { row, _ -> row[units].toLong() }
         securitiesResult = securitiesResult?.addOrUpdateColumnInDataFrame(marketValue) { row, _ -> row[rbPrice].multiply(BigDecimal.valueOf(row[rbUnits])) }
         return securitiesResult
     }

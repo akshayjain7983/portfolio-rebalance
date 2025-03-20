@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.*
 import java.io.IOException
+import java.io.InputStream
 import java.util.concurrent.atomic.AtomicReference
 
 object JsonMapperProvider {
@@ -107,6 +108,14 @@ inline fun <reified T> fromJson(json: String?, jsonMapper: JsonMapper = JsonMapp
     try {
         var jsonToUse = adjustJsonForParsingTemporal<T>(json)
         return jsonMapper.readValue<T>(jsonToUse ?: "")
+    } catch (e: JsonProcessingException) {
+        throw RuntimeException(e)
+    }
+}
+
+inline fun <reified T> fromJson(json: InputStream?, jsonMapper: JsonMapper = JsonMapperProvider.getJsonMapper()): T? {
+    try {
+        return json?.let { jsonMapper.readValue<T>(json) }
     } catch (e: JsonProcessingException) {
         throw RuntimeException(e)
     }

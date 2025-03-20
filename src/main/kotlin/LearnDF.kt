@@ -13,6 +13,10 @@ fun main() {
     df = df.add (getStringAccessor("new_name_column") ) { getStringAccessor("title")() }
     df = df.remove(getStringAccessor("abradabra"))
     df = df.remove(getStringAccessor("new_name_column"))
+
+//    df = df["security_id", "rebalance_price", "rebalance_units", "market_value", "rebalance_weight", "min_run_locked_since"]
+
+    df = df.select("title", "genres")
     df.print()
     println("B" > "Vehicles")
     println(true xor true xor true xor true)
