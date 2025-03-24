@@ -1,6 +1,5 @@
 package io.github.funofprograming.pr.configuration
 
-import io.github.funofprograming.pr.configuration.Currency
 import io.github.funofprograming.pr.rule.PortfolioRule
 import java.math.BigDecimal
 import java.time.LocalDate

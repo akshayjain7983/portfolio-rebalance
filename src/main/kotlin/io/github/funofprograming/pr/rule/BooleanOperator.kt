@@ -1,7 +1,5 @@
 package io.github.funofprograming.pr.rule
 
-import io.github.funofprograming.pr.rule.ComparisonOperator.*
-
 enum class BooleanOperator(val symbol:String) {
     AND("AND"),
     OR("OR"),

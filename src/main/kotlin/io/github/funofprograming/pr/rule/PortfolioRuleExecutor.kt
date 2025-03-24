@@ -1,9 +1,9 @@
 package io.github.funofprograming.pr.rule
 
 import REBAL_CMD_KEY
-import io.github.funofprograming.context.impl.getGlobalContext
 import io.github.funofprograming.pr.configuration.PortfolioConfiguration
 import io.github.funofprograming.pr.rule.derived.DefaultDerivedDataRule
+import io.github.funofprograming.pr.util.getGlobalRebalanceContext
 import io.github.funofprograming.pr.vo.PortfolioRebalanceCommand
 import org.jetbrains.kotlinx.dataframe.DataFrame
 import org.jetbrains.kotlinx.dataframe.api.isEmpty
@@ -13,7 +13,7 @@ class PortfolioRuleExecutor(private val rebalanceId: UUID) {
 
     fun execute(): DataFrame<*> {
 
-        val rebalanceContext = getGlobalContext(rebalanceId.toString())
+        val rebalanceContext = getGlobalRebalanceContext(rebalanceId)
         val portfolioRebalanceCommand: PortfolioRebalanceCommand? = rebalanceContext?.fetch(REBAL_CMD_KEY)
         val portfolioConfiguration:PortfolioConfiguration? = portfolioRebalanceCommand?.portfolioConfiguration
         val portfolioRules:List<PortfolioRule>? = addDefaultDerivedDataRule(portfolioConfiguration?.constituentRules)

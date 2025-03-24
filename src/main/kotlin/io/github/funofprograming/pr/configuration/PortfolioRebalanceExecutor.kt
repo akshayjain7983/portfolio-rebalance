@@ -5,6 +5,7 @@ import REBAL_CMD_KEY
 import REBAL_OUTPUT_KEY
 import io.github.funofprograming.context.impl.getGlobalContext
 import io.github.funofprograming.pr.rule.PortfolioRuleExecutor
+import io.github.funofprograming.pr.util.getGlobalRebalanceContext
 import io.github.funofprograming.pr.vo.PortfolioRebalance
 import io.github.funofprograming.pr.vo.PortfolioRebalanceCommand
 import io.github.funofprograming.pr.vo.PortfolioRebalanceMetrics
@@ -23,7 +24,7 @@ class PortfolioRebalanceExecutor(val portfolioRebalanceCommand: PortfolioRebalan
         val rebalanceId: UUID = portfolioRebalanceCommand.rebalanceId
         val rebalanceMetrics = PortfolioRebalanceMetrics(Clock.System.now(), null)
         val portfolioRebalance = PortfolioRebalance(rebalanceId, rebalanceMetrics, null, null, null, null)
-        val rebalanceContext = getGlobalContext(rebalanceId.toString())
+        val rebalanceContext = getGlobalRebalanceContext(rebalanceId)
         rebalanceContext?.add(REBAL_CMD_KEY, portfolioRebalanceCommand)
         rebalanceContext?.add(REBAL_OUTPUT_KEY, portfolioRebalance)
         val portfolioRuleExecutor = PortfolioRuleExecutor(rebalanceId)

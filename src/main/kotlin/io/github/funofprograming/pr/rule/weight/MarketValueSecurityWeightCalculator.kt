@@ -1,13 +1,8 @@
 package io.github.funofprograming.pr.rule.weight
 
 import PORTFOLIO_SIZE_CURRENT
-import io.github.funofprograming.context.impl.getGlobalContext
-import io.github.funofprograming.pr.util.addOrUpdateColumnInDataFrame
-import io.github.funofprograming.pr.util.safeDivide
-import org.jetbrains.kotlinx.dataframe.DataFrame
-import org.jetbrains.kotlinx.dataframe.DataRow
+import io.github.funofprograming.pr.util.getGlobalRebalanceContext
 import org.jetbrains.kotlinx.dataframe.api.*
-import org.jetbrains.kotlinx.dataframe.values
 import java.math.BigDecimal
 import java.util.*
 
@@ -21,7 +16,7 @@ object MarketValueSecurityWeightCalculator: AbstractSimpleSecurityWeightCalculat
 
     override fun overrideTotalWeightingAttribute(rebalanceId: UUID, totalWeightingAttribute:BigDecimal):BigDecimal {
 
-        val rbContext = getGlobalContext(rebalanceId.toString())
+        val rbContext = getGlobalRebalanceContext(rebalanceId)
         val currentPortfolioSize:BigDecimal = rbContext?.fetch(PORTFOLIO_SIZE_CURRENT) ?: BigDecimal.ZERO
         return if(currentPortfolioSize < totalWeightingAttribute) totalWeightingAttribute else currentPortfolioSize
     }

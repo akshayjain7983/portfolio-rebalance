@@ -1,8 +1,8 @@
 package io.github.funofprograming.pr.rule.loop
 
 import REBAL_LOOP_RULE_STATES_KEY
-import io.github.funofprograming.context.impl.getGlobalContext
 import io.github.funofprograming.pr.rule.PortfolioRule
+import io.github.funofprograming.pr.util.getGlobalRebalanceContext
 import io.github.funofprograming.pr.util.isLoopContinueNextIteration
 import io.github.funofprograming.pr.util.isLoopInnermost
 import org.jetbrains.kotlinx.dataframe.DataFrame
@@ -24,7 +24,7 @@ class LoopPortfolioRule: PortfolioRule {
             return securities
         }
 
-        val rebalanceContext = getGlobalContext(rebalanceId.toString())
+        val rebalanceContext = getGlobalRebalanceContext(rebalanceId)
         initiateLooping(rebalanceId)
         var securitiesLooped:DataFrame<*>? = securities
 
@@ -53,10 +53,10 @@ class LoopPortfolioRule: PortfolioRule {
 
     private fun initiateLooping(rebalanceId: UUID) {
 
-        val rebalanceContext = getGlobalContext(rebalanceId.toString())
+        val rebalanceContext = getGlobalRebalanceContext(rebalanceId)
         if(rebalanceContext?.exists(REBAL_LOOP_RULE_STATES_KEY)?.not() == true) {
             rebalanceContext?.add(REBAL_LOOP_RULE_STATES_KEY, LinkedBlockingDeque())
         }
-        rebalanceContext?.fetch(REBAL_LOOP_RULE_STATES_KEY)?.add(LoopState(loopLabel, maxIterations, AtomicInteger(0), AtomicBoolean(false)))
+        rebalanceContext?.fetch(REBAL_LOOP_RULE_STATES_KEY)?.push(LoopState(loopLabel, maxIterations, AtomicInteger(0), AtomicBoolean(false)))
     }
 }

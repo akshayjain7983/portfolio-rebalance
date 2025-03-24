@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id
 import io.github.funofprograming.pr.rule.filter.FiltersRule
 import io.github.funofprograming.pr.rule.loop.LoopPortfolioRule
 import io.github.funofprograming.pr.rule.weight.WeightCalculationRule
+import io.github.funofprograming.pr.rule.weight.capping.WeightCappingRule
 import org.jetbrains.kotlinx.dataframe.DataFrame
 import java.util.*
 
@@ -16,6 +17,7 @@ import java.util.*
     JsonSubTypes.Type(name = "FiltersRule", value = FiltersRule::class),
     JsonSubTypes.Type(name = "WeightCalculationRule", value = WeightCalculationRule::class),
     JsonSubTypes.Type(name = "RegisteredRule", value = RegisteredRule::class),
+    JsonSubTypes.Type(name = "WeightCappingRule", value = WeightCappingRule::class),
 )
 interface PortfolioRule {
 

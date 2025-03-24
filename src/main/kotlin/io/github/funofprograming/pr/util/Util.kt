@@ -5,15 +5,18 @@ import MARKET_VALUE_CALCULATOR_REGISTRY
 import REBAL_LOOP_RULE_STATES_KEY
 import REGISTERED_RULE_REGISTRY
 import SECURITY_WEIGHT_CALCULATOR_REGISTRY
+import SECURITY_WEIGHT_CAPPER_REGISTRY
+import io.github.funofprograming.context.ApplicationContext
 import io.github.funofprograming.context.Key
 import io.github.funofprograming.context.impl.getGlobalContext
 import io.github.funofprograming.pr.rule.Attribute
 import io.github.funofprograming.pr.rule.RegistrableRule
-import io.github.funofprograming.pr.rule.derived.DerivedDataRule
 import io.github.funofprograming.pr.rule.mv.EquitiesMarketValueCalculator
 import io.github.funofprograming.pr.rule.mv.SecurityMarketValueCalculator
 import io.github.funofprograming.pr.rule.weight.MarketValueSecurityWeightCalculator
 import io.github.funofprograming.pr.rule.weight.SecurityWeightCalculator
+import io.github.funofprograming.pr.rule.weight.capping.EquityPortfolioAmountLimitSecurityWeightCapper
+import io.github.funofprograming.pr.rule.weight.capping.SecurityWeightCapper
 import io.github.funofprograming.pr.vo.PortfolioRebalanceCommand
 import org.jetbrains.kotlinx.dataframe.DataFrame
 import org.jetbrains.kotlinx.dataframe.DataRow
@@ -24,20 +27,33 @@ import org.jetbrains.kotlinx.dataframe.api.update
 import org.jetbrains.kotlinx.dataframe.columns.ColumnAccessor
 import org.jetbrains.kotlinx.dataframe.columns.ColumnReference
 import java.math.BigDecimal
+import java.math.MathContext
 import java.util.*
-import kotlin.jvm.internal.Reflection
+
+inline fun getGlobalRebalanceContext(rebalanceId: UUID):ApplicationContext? = getGlobalContext(rebalanceId.toString())
 
 fun isLoopContinueNextIteration(rebalanceId: UUID, loopLabel: String?):Boolean {
 
-    val rebalanceContext = getGlobalContext(rebalanceId.toString())
+    val rebalanceContext = getGlobalRebalanceContext(rebalanceId)
     val loopState = rebalanceContext?.fetch(REBAL_LOOP_RULE_STATES_KEY)?.peek()
     return loopState?.loopLabel == loopLabel && loopState?.continueNextIteration?.get() ?: false
 }
 
 fun isLoopInnermost(rebalanceId: UUID, loopLabel: String?):Boolean {
-    val rebalanceContext = getGlobalContext(rebalanceId.toString())
+    val rebalanceContext = getGlobalRebalanceContext(rebalanceId)
     val loopState = rebalanceContext?.fetch(REBAL_LOOP_RULE_STATES_KEY)?.peek()
     return loopState?.loopLabel == loopLabel
+}
+
+inline fun isInnermostLoopIterationExhausted(rebalanceId: UUID): Boolean =
+    Optional.ofNullable(getGlobalRebalanceContext(rebalanceId)?.fetch(REBAL_LOOP_RULE_STATES_KEY)?.peek()).map { ls->ls.maxIterations == ls.currentIteration.get() }.orElse(false)
+
+inline fun isInsideLoop(rebalanceId: UUID): Boolean = getGlobalRebalanceContext(rebalanceId)?.fetch(REBAL_LOOP_RULE_STATES_KEY)?.isNotEmpty() ?: false
+
+inline fun breakLook(rebalanceId: UUID):Unit {
+    if(isInsideLoop(rebalanceId))
+        getGlobalRebalanceContext(rebalanceId)?.fetch(REBAL_LOOP_RULE_STATES_KEY)?.pop()
+    return
 }
 
 fun <T> getObject(attr: Attribute<T>?, row: DataRow<*>): T? {
@@ -109,8 +125,14 @@ fun registerAllMarketValueCalculatorObjects() {
     registerMarketValueCalculator(EquitiesMarketValueCalculator)
 }
 
+fun registerAllSecurityWeightCapperObjects() {
+    registerSecurityWeightCapper(EquityPortfolioAmountLimitSecurityWeightCapper)
+}
+
 fun PortfolioRebalanceCommand.registerSecurityWeightCalculator(securityWeightCalculator: SecurityWeightCalculator) = io.github.funofprograming.pr.util.registerSecurityWeightCalculator(securityWeightCalculator)
 fun PortfolioRebalanceCommand.deregisterSecurityWeightCalculator(securityWeightCalculatorId: String) = io.github.funofprograming.pr.util.deregisterSecurityWeightCalculator(securityWeightCalculatorId)
+fun PortfolioRebalanceCommand.registerSecurityWeightCapper(securityWeightCapper: SecurityWeightCapper) = io.github.funofprograming.pr.util.registerSecurityWeightCapper(securityWeightCapper)
+fun PortfolioRebalanceCommand.deregisterSecurityWeightCapper(securityWeightCapperId: String) = io.github.funofprograming.pr.util.deregisterSecurityWeightCapper(securityWeightCapperId)
 fun PortfolioRebalanceCommand.registerMarketValueCalculator(marketValueCalculator: SecurityMarketValueCalculator) = io.github.funofprograming.pr.util.registerMarketValueCalculator(marketValueCalculator)
 fun PortfolioRebalanceCommand.deregisterMarketValueCalculator(marketValueCalculatorId: String) = io.github.funofprograming.pr.util.deregisterMarketValueCalculator(marketValueCalculatorId)
 fun PortfolioRebalanceCommand.registerPortfolioRule(registrableRule: RegistrableRule) = io.github.funofprograming.pr.util.registerPortfolioRule(registrableRule)
@@ -128,6 +150,12 @@ fun registerMarketValueCalculator(marketValueCalculator: SecurityMarketValueCalc
 fun deregisterMarketValueCalculator(marketValueCalculatorId: String) =
     MARKET_VALUE_CALCULATOR_REGISTRY?.erase(Key.of<SecurityMarketValueCalculator>(marketValueCalculatorId))
 
+fun registerSecurityWeightCapper(securityWeightCapper: SecurityWeightCapper) =
+    SECURITY_WEIGHT_CAPPER_REGISTRY?.add(Key.of<SecurityWeightCapper>(securityWeightCapper.securityWeightCapperId()), securityWeightCapper)
+
+fun deregisterSecurityWeightCapper(securityWeightCapperId: String) =
+    SECURITY_WEIGHT_CAPPER_REGISTRY?.erase(Key.of<SecurityWeightCapper>(securityWeightCapperId))
+
 fun registerPortfolioRule(registrableRule: RegistrableRule) =
     REGISTERED_RULE_REGISTRY?.add(Key.of<RegistrableRule>(registrableRule.registerableRuleId()), registrableRule)
 
@@ -138,9 +166,13 @@ fun getSecurityWeightCalculator(securityWeightCalculatorId: String): SecurityWei
 
 fun getMarketValueCalculator(marketValueCalculatorId: String): SecurityMarketValueCalculator? = MARKET_VALUE_CALCULATOR_REGISTRY?.fetch(Key.of<SecurityMarketValueCalculator>(marketValueCalculatorId))
 
+fun getSecurityWeightCapper(securityWeightCapperId: String): SecurityWeightCapper? = SECURITY_WEIGHT_CAPPER_REGISTRY?.fetch(Key.of<SecurityWeightCapper>(securityWeightCapperId))
+
 fun getRegisteredPortfolioRule(registerableRuleId: String): RegistrableRule? = REGISTERED_RULE_REGISTRY?.fetch(Key.of<RegistrableRule>(registerableRuleId))
 
 inline fun BigDecimal.safeDivide(divisor: BigDecimal):BigDecimal = if(divisor == BigDecimal.ZERO) BigDecimal.ZERO else this.divide(divisor, DEFAULT_PRECISION)
+
+inline fun BigDecimal.safeDivide(divisor: BigDecimal, precision: MathContext):BigDecimal = if(divisor == BigDecimal.ZERO) BigDecimal.ZERO else this.divide(divisor, precision)
 
 inline fun <reified T> DataFrame<*>.addOrUpdateColumnInDataFrame(column: ColumnAccessor<T>, crossinline expression: (DataRow<*>, T?) -> T):DataFrame<*>? {
 
@@ -148,7 +180,8 @@ inline fun <reified T> DataFrame<*>.addOrUpdateColumnInDataFrame(column: ColumnA
         if(this.getColumnOrNull(column) == null)
             this.add(column) { row->expression.invoke(row, null) }
         else
-            this.update(column)?.perRowCol {row, col -> expression.invoke(row, row[col])}
+            this.update(column)?.perRowCol {row, col -> expression.invoke(row, row.getValueOrNull(col))}
 
     return dataframeResult
 }
+

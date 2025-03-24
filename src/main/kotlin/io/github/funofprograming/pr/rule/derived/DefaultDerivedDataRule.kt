@@ -2,8 +2,7 @@ package io.github.funofprograming.pr.rule.derived
 
 import PORTFOLIO_SIZE_CURRENT
 import REBAL_CMD_KEY
-import io.github.funofprograming.context.impl.getGlobalContext
-import io.github.funofprograming.pr.rule.PortfolioRule
+import io.github.funofprograming.pr.util.getGlobalRebalanceContext
 import io.github.funofprograming.pr.util.getMarketValueCalculator
 import kotlinx.datetime.toJavaLocalDate
 import org.jetbrains.kotlinx.dataframe.DataFrame
@@ -25,7 +24,7 @@ class DefaultDerivedDataRule: DerivedDataRule {
 
     private val updatePortfolioCurrentSize: (UUID, DataFrame<*>?)->DataFrame<*>? = portfolioCurrentSize@{ rebalanceId, securities ->
 
-        val rbContext = getGlobalContext(rebalanceId.toString())
+        val rbContext = getGlobalRebalanceContext(rebalanceId)
         val rbCmd = rbContext?.fetch(REBAL_CMD_KEY)
         val pc = rbCmd?.portfolioConfiguration
         val portfolioCurrentSizeCalculatorId = pc?.portfolioCurrentSizeCalculator

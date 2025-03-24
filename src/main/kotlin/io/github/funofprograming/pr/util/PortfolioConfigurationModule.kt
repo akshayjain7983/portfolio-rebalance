@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import io.github.funofprograming.pr.rule.BooleanOperator
 import io.github.funofprograming.pr.rule.ComparisonOperator
-import java.util.*
-import java.util.function.Function
 
 
 class PortfolioConfigurationModule: SimpleModule {

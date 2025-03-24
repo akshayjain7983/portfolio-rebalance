@@ -44,7 +44,7 @@
         {
           "type": "LoopPortfolioRule",
           "loopLabel": "loopWeightCapping1",
-          "maxIterations": 1,
+          "maxIterations": 500,
           "portfolioRules": [
             {
               "type": "WeightCalculationRule",
@@ -52,6 +52,14 @@
                 "MarketValueSecurityWeightCalculator": "EquitiesMarketValueCalculator"
               },
               "rebalanceWeightAttributeName": "market_value_weight"
+            },
+            {
+              "type": "WeightCappingRule",
+              "securityWeightCappersWithParams": [
+                {
+                  "securityWeightCapperId": "EquityPortfolioAmountLimitSecurityWeightCapper"
+                }
+              ]
             }
           ]
         }

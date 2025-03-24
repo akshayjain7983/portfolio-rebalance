@@ -3,17 +3,12 @@ package io.github.funofprograming.pr.vo
 import com.fasterxml.jackson.databind.json.JsonMapper
 import io.github.funofprograming.pr.configuration.PortfolioConfiguration
 import io.github.funofprograming.pr.configuration.PortfolioRebalanceExecutor
-import io.github.funofprograming.pr.util.JsonMapperProvider
-import io.github.funofprograming.pr.util.fromJson
-import io.github.funofprograming.pr.util.registerAllMarketValueCalculatorObjects
-import io.github.funofprograming.pr.util.registerAllSecurityWeightCalculatorObjects
+import io.github.funofprograming.pr.util.*
 import kotlinx.datetime.LocalDate
 import org.jetbrains.kotlinx.dataframe.DataFrame
-import org.jetbrains.kotlinx.dataframe.api.JsonPath
 import org.jetbrains.kotlinx.dataframe.api.ParserOptions
-import org.jetbrains.kotlinx.dataframe.columns.ColumnGroup
-import org.jetbrains.kotlinx.dataframe.io.*
-import org.jetbrains.kotlinx.dataframe.io.JSON.TypeClashTactic
+import org.jetbrains.kotlinx.dataframe.io.ColType
+import org.jetbrains.kotlinx.dataframe.io.readCSV
 import java.io.InputStream
 import java.nio.charset.Charset
 import java.time.format.DateTimeFormatter
@@ -38,6 +33,7 @@ data class PortfolioRebalanceCommand private constructor (
 
         registerAllMarketValueCalculatorObjects()
         registerAllSecurityWeightCalculatorObjects()
+        registerAllSecurityWeightCapperObjects()
 
         return PortfolioRebalanceExecutor(this).execute()
     }

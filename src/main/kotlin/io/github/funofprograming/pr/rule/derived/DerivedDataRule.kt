@@ -1,6 +1,5 @@
 package io.github.funofprograming.pr.rule.derived
 
-import io.github.funofprograming.pr.rule.PortfolioRule
 import io.github.funofprograming.pr.rule.RegistrableRule
 import org.jetbrains.kotlinx.dataframe.DataFrame
 import java.util.*
