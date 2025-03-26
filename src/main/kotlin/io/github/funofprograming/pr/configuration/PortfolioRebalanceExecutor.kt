@@ -30,15 +30,19 @@ class PortfolioRebalanceExecutor(val portfolioRebalanceCommand: PortfolioRebalan
         val portfolioRuleExecutor = PortfolioRuleExecutor(rebalanceId)
         val securities:DataFrame<*>? = portfolioRuleExecutor.execute()
         val portfolioRebalanceFinal: PortfolioRebalance? = rebalanceContext?.fetch(REBAL_OUTPUT_KEY)
-        portfolioRebalanceFinal?.let { preparePortfolioRebalance(portfolioRebalanceFinal, securities ?: DataFrame.empty()) }
+        portfolioRebalanceFinal?.let { preparePortfolioRebalance(it, securities ?: DataFrame.empty()) }
         (portfolioRebalanceFinal ?: portfolioRebalance).rebalanceMetrics?.endTimestamp = Clock.System.now()
         return portfolioRebalanceFinal ?: portfolioRebalance
     }
 
     private fun preparePortfolioRebalance(portfolioRebalanceFinal: PortfolioRebalance, securities: DataFrame<*>) {
 
-        val rbContext = getGlobalContext(portfolioRebalanceCommand.rebalanceId.toString())
-        portfolioRebalanceFinal.portfolioConstituents = securities.select("security_id", "rebalance_price", "rebalance_units", "market_value", "rebalance_weight")
+        val rbContext = getGlobalRebalanceContext(portfolioRebalanceCommand.rebalanceId)
+        var pc = portfolioRebalanceCommand.portfolioConfiguration
+        var secOutAdditionalColList = pc.constituentOutputAdditionalColumns
+        var secOutCols = mutableListOf("security_id", "rebalance_price", "rebalance_units", "market_value", "rebalance_weight")
+        secOutAdditionalColList?.let { secOutCols.addAll(it) }
+        portfolioRebalanceFinal.portfolioConstituents = securities.select(columns = secOutCols.toTypedArray())
         val currentPortfolioSize:BigDecimal = rbContext?.fetch(PORTFOLIO_SIZE_CURRENT) ?: portfolioRebalanceCommand.portfolioConfiguration.portfolioInvestmentAmountLimit ?: BigDecimal.ZERO
         portfolioRebalanceFinal.investmentMarketValue = portfolioRebalanceFinal.portfolioConstituents?.sum(column<BigDecimal>("market_value")) ?: BigDecimal.ZERO
         portfolioRebalanceFinal.portfolioCash = currentPortfolioSize - (portfolioRebalanceFinal.investmentMarketValue ?: BigDecimal.ZERO)

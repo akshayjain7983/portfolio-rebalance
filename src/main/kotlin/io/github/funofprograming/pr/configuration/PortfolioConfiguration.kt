@@ -12,5 +12,6 @@ data class PortfolioConfiguration (
     var portfolioCurrentSizeCalculator: String? = null,
     var portfolioCurrentSizeAttribute: String? = null,
     var exchangesWithSecurityTypes: Map<String, Collection<SecurityType>>? = null,
-    var constituentRules: List<PortfolioRule>? = null
+    var constituentRules: List<PortfolioRule>? = null,
+    var constituentOutputAdditionalColumns: List<String>? = null
 )

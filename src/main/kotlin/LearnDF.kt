@@ -3,8 +3,14 @@ import org.jetbrains.kotlinx.dataframe.DataRow
 import org.jetbrains.kotlinx.dataframe.api.*
 import org.jetbrains.kotlinx.dataframe.columns.ColumnAccessor
 import org.jetbrains.kotlinx.dataframe.io.read
+import java.util.UUID
 
 fun main() {
+
+    var rebalanceId = UUID.randomUUID()
+    rebalanceId.let{
+        checkScopeContext(it)
+    }
 
     var df = DataFrame.read("/home/akshayjain/Downloads/movies.csv")
     val predicate = getStringPredicate("genres")
@@ -20,6 +26,10 @@ fun main() {
     println("B" > "Vehicles")
     println(true xor true xor true xor true)
 
+}
+
+fun checkScopeContext(uuid: UUID):Unit {
+    println(uuid)
 }
 
 fun getStringPredicate(colName:String): DataRow<*>.(DataRow<*>) -> kotlin.Boolean {
