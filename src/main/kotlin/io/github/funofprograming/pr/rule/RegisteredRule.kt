@@ -10,7 +10,7 @@ class RegisteredRule: PortfolioRule {
 
     override fun execute(rebalanceId: UUID, securities: DataFrame<*>?): DataFrame<*>? {
         val registerableRule = getRegisteredPortfolioRule(registeredRuleId ?: "")
-        val securitiesResult = registerableRule?.execute(rebalanceId, securities) ?: securities
+        val securitiesResult = registerableRule?.execute(rebalanceId, securities)
         return securitiesResult
     }
 }

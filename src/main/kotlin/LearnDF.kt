@@ -1,16 +1,28 @@
+import com.fasterxml.jackson.module.kotlin.readValue
+import io.github.funofprograming.pr.util.JsonMapperProvider
+import io.github.funofprograming.pr.util.fromJson
 import org.jetbrains.kotlinx.dataframe.DataFrame
 import org.jetbrains.kotlinx.dataframe.DataRow
 import org.jetbrains.kotlinx.dataframe.api.*
 import org.jetbrains.kotlinx.dataframe.columns.ColumnAccessor
 import org.jetbrains.kotlinx.dataframe.io.read
+import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 
 fun main() {
+
+    println(Instant.now())
+
+    val literal:String = "2025-02-02"
+    val date = JsonMapperProvider.getJsonMapper().readValue<LocalDate>(literal)
 
     var rebalanceId = UUID.randomUUID()
     rebalanceId.let{
         checkScopeContext(it)
     }
+
+
 
     var df = DataFrame.read("/home/akshayjain/Downloads/movies.csv")
     val predicate = getStringPredicate("genres")
@@ -23,9 +35,10 @@ fun main() {
 
     df = df.select("title", "genres")
     df.print()
-    println("B" > "Vehicles")
-    println(true xor true xor true xor true)
 
+    var df1 = DataFrame.empty(df.schema())
+    df1 = df1.append(df)
+    df1.print()
 }
 
 fun checkScopeContext(uuid: UUID):Unit {

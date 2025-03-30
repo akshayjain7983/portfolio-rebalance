@@ -28,12 +28,27 @@
                   "type": "ComparisonExpression",
                   "leftSide": {
                     "name": "listing_date",
-                    "type": "java.time.LocalDate"
+                    "type": "Date"
                   },
                   "operator": ">=",
                   "rightSide": {
-                    "type": "java.time.LocalDate",
+                    "type": "Date",
                     "literalValue": "2000-01-01"
+                  }
+                }
+              },
+              {
+                "type": "ExpressionFilter",
+                "expression": {
+                  "type": "ComparisonExpression",
+                  "leftSide": {
+                    "name": "close_price",
+                    "type": "Number"
+                  },
+                  "operator": ">=",
+                  "rightSide": {
+                    "type": "Number",
+                    "literalValue": "100.00"
                   }
                 }
               }

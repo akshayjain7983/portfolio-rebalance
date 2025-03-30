@@ -6,17 +6,21 @@ import REBAL_LOOP_RULE_STATES_KEY
 import REGISTERED_RULE_REGISTRY
 import SECURITY_WEIGHT_CALCULATOR_REGISTRY
 import SECURITY_WEIGHT_CAPPER_REGISTRY
+import SECURITY_WEIGHT_CAPPING_STRATEGY_REGISTRY
 import io.github.funofprograming.context.ApplicationContext
 import io.github.funofprograming.context.Key
 import io.github.funofprograming.context.impl.getGlobalContext
 import io.github.funofprograming.pr.rule.Attribute
+import io.github.funofprograming.pr.rule.AttributeType
 import io.github.funofprograming.pr.rule.RegistrableRule
 import io.github.funofprograming.pr.rule.mv.EquitiesMarketValueCalculator
 import io.github.funofprograming.pr.rule.mv.SecurityMarketValueCalculator
 import io.github.funofprograming.pr.rule.weight.MarketValueSecurityWeightCalculator
 import io.github.funofprograming.pr.rule.weight.SecurityWeightCalculator
 import io.github.funofprograming.pr.rule.weight.capping.EquityPortfolioAmountLimitSecurityWeightCapper
+import io.github.funofprograming.pr.rule.weight.capping.ProRataSecurityWeightCappingStrategy
 import io.github.funofprograming.pr.rule.weight.capping.SecurityWeightCapper
+import io.github.funofprograming.pr.rule.weight.capping.SecurityWeightCappingStrategy
 import io.github.funofprograming.pr.vo.PortfolioRebalanceCommand
 import org.jetbrains.kotlinx.dataframe.DataFrame
 import org.jetbrains.kotlinx.dataframe.DataRow
@@ -26,6 +30,7 @@ import org.jetbrains.kotlinx.dataframe.api.perRowCol
 import org.jetbrains.kotlinx.dataframe.api.update
 import org.jetbrains.kotlinx.dataframe.columns.ColumnAccessor
 import org.jetbrains.kotlinx.dataframe.columns.ColumnReference
+import org.w3c.dom.Attr
 import java.math.BigDecimal
 import java.math.MathContext
 import java.util.*
@@ -63,7 +68,7 @@ fun <T> getObject(attr: Attribute<T>?, row: DataRow<*>): T? {
     val literal = attr?.literalValue
 
     if(literal != null) {
-        return  parseLiteral(literal, type)
+        return  literal
 
     } else if(name != null) {
         val accessor = getAccessor(name, type)
@@ -73,48 +78,19 @@ fun <T> getObject(attr: Attribute<T>?, row: DataRow<*>): T? {
     throw IllegalArgumentException("Invalid attribute: $attr")
 }
 
-fun <T> parseLiteral(literal: String?, type: Class<T>?): T? {
-
-    if(literal == null || type == null)
-        return null
-
-    return when{
-        type.isAssignableFrom(java.lang.String::class.java) -> fromJson<java.lang.String>(literal)
-        type.isAssignableFrom(java.lang.Short::class.java) -> fromJson<java.lang.Short>(literal)
-        type.isAssignableFrom(java.lang.Integer::class.java) -> fromJson<java.lang.Integer>(literal)
-        type.isAssignableFrom(java.lang.Long::class.java) -> fromJson<java.lang.Long>(literal)
-        type.isAssignableFrom(java.lang.Float::class.java) -> fromJson<java.lang.Float>(literal)
-        type.isAssignableFrom(java.lang.Double::class.java) -> fromJson<java.lang.Double>(literal)
-        type.isAssignableFrom(java.math.BigInteger::class.java) -> fromJson<java.math.BigInteger>(literal)
-        type.isAssignableFrom(java.math.BigDecimal::class.java) -> fromJson<java.math.BigDecimal>(literal)
-        type.isAssignableFrom(java.time.LocalDate::class.java) -> fromJson<java.time.LocalDate>(literal)
-        type.isAssignableFrom(java.time.LocalDateTime::class.java) -> fromJson<java.time.LocalDateTime>(literal)
-        type.isAssignableFrom(java.time.ZonedDateTime::class.java) -> fromJson<java.time.ZonedDateTime>(literal)
-        type.isAssignableFrom(java.time.Instant::class.java) -> fromJson<java.time.Instant>(literal)
-        else -> throw IllegalArgumentException("Unsupported attribute type: $type")
-    } as T?
-}
-
-fun <T> getAccessor(colName: String?, type: Class<T>?): ColumnAccessor<T>? {
+fun getAccessor(colName: String?, type: AttributeType?): ColumnAccessor<*>? {
 
     if (colName == null || type == null)
         return null
 
-    return when {
-        type.isAssignableFrom(java.lang.String::class.java) -> column<java.lang.String>(colName)
-        type.isAssignableFrom(java.lang.Short::class.java) -> column<java.lang.Short>(colName)
-        type.isAssignableFrom(java.lang.Integer::class.java) -> column<java.lang.Integer>(colName)
-        type.isAssignableFrom(java.lang.Long::class.java) -> column<java.lang.Long>(colName)
-        type.isAssignableFrom(java.lang.Float::class.java) -> column<java.lang.Float>(colName)
-        type.isAssignableFrom(java.lang.Double::class.java) -> column<java.lang.Double>(colName)
-        type.isAssignableFrom(java.math.BigInteger::class.java) -> column<java.math.BigInteger>(colName)
-        type.isAssignableFrom(java.math.BigDecimal::class.java) -> column<java.math.BigDecimal>(colName)
-        type.isAssignableFrom(java.time.LocalDate::class.java) -> column<java.time.LocalDate>(colName)
-        type.isAssignableFrom(java.time.LocalDateTime::class.java) -> column<java.time.LocalDateTime>(colName)
-        type.isAssignableFrom(java.time.ZonedDateTime::class.java) -> column<java.time.ZonedDateTime>(colName)
-        type.isAssignableFrom(java.time.Instant::class.java) -> column<java.time.Instant>(colName)
-        else -> throw IllegalArgumentException("Unsupported attribute type: $type")
-    } as ColumnAccessor<T>
+    return when(type) {
+        AttributeType.STRING -> column<java.lang.String>(colName)
+        AttributeType.NUMBER -> column<java.math.BigDecimal>(colName)
+        AttributeType.LOCAL_DATE -> column<java.time.LocalDate>(colName)
+        AttributeType.LOCAL_DATE_TIME -> column<java.time.LocalDateTime>(colName)
+        AttributeType.ZONED_DATE_TIME -> column<java.time.ZonedDateTime>(colName)
+        AttributeType.INSTANT -> column<java.time.Instant>(colName)
+    }
 }
 
 fun registerAllSecurityWeightCalculatorObjects() {
@@ -127,6 +103,10 @@ fun registerAllMarketValueCalculatorObjects() {
 
 fun registerAllSecurityWeightCapperObjects() {
     registerSecurityWeightCapper(EquityPortfolioAmountLimitSecurityWeightCapper)
+}
+
+fun registerAllSecurityWeightCappingStrategyObjects() {
+    registerSecurityWeightCappingStrategy(ProRataSecurityWeightCappingStrategy)
 }
 
 fun PortfolioRebalanceCommand.registerSecurityWeightCalculator(securityWeightCalculator: SecurityWeightCalculator) = io.github.funofprograming.pr.util.registerSecurityWeightCalculator(securityWeightCalculator)
@@ -156,6 +136,12 @@ fun registerSecurityWeightCapper(securityWeightCapper: SecurityWeightCapper) =
 fun deregisterSecurityWeightCapper(securityWeightCapperId: String) =
     SECURITY_WEIGHT_CAPPER_REGISTRY?.erase(Key.of<SecurityWeightCapper>(securityWeightCapperId))
 
+fun registerSecurityWeightCappingStrategy(securityWeightCappingStrategy: SecurityWeightCappingStrategy) =
+    SECURITY_WEIGHT_CAPPING_STRATEGY_REGISTRY?.add(Key.of<SecurityWeightCappingStrategy>(securityWeightCappingStrategy.securityWeightCappingStrategyId()), securityWeightCappingStrategy)
+
+fun deregisterSecurityWeightCappingStrategy(securityWeightCappingStrategyId: String) =
+    SECURITY_WEIGHT_CAPPING_STRATEGY_REGISTRY?.erase(Key.of<SecurityWeightCappingStrategy>(securityWeightCappingStrategyId))
+
 fun registerPortfolioRule(registrableRule: RegistrableRule) =
     REGISTERED_RULE_REGISTRY?.add(Key.of<RegistrableRule>(registrableRule.registerableRuleId()), registrableRule)
 
@@ -167,6 +153,8 @@ fun getSecurityWeightCalculator(securityWeightCalculatorId: String): SecurityWei
 fun getMarketValueCalculator(marketValueCalculatorId: String): SecurityMarketValueCalculator? = MARKET_VALUE_CALCULATOR_REGISTRY?.fetch(Key.of<SecurityMarketValueCalculator>(marketValueCalculatorId))
 
 fun getSecurityWeightCapper(securityWeightCapperId: String): SecurityWeightCapper? = SECURITY_WEIGHT_CAPPER_REGISTRY?.fetch(Key.of<SecurityWeightCapper>(securityWeightCapperId))
+
+fun getSecurityWeightCappingStrategy(securityWeightCappingStrategyId: String): SecurityWeightCappingStrategy? = SECURITY_WEIGHT_CAPPING_STRATEGY_REGISTRY?.fetch(Key.of<SecurityWeightCappingStrategy>(securityWeightCappingStrategyId))
 
 fun getRegisteredPortfolioRule(registerableRuleId: String): RegistrableRule? = REGISTERED_RULE_REGISTRY?.fetch(Key.of<RegistrableRule>(registerableRuleId))
 

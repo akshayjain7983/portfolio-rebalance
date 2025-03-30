@@ -9,6 +9,7 @@ import org.jetbrains.kotlinx.dataframe.DataFrame
 import org.jetbrains.kotlinx.dataframe.api.ParserOptions
 import org.jetbrains.kotlinx.dataframe.io.ColType
 import org.jetbrains.kotlinx.dataframe.io.readCSV
+import org.jetbrains.kotlinx.dataframe.io.readJson
 import java.io.InputStream
 import java.nio.charset.Charset
 import java.time.format.DateTimeFormatter
@@ -34,6 +35,7 @@ data class PortfolioRebalanceCommand private constructor (
         registerAllMarketValueCalculatorObjects()
         registerAllSecurityWeightCalculatorObjects()
         registerAllSecurityWeightCapperObjects()
+        registerAllSecurityWeightCappingStrategyObjects()
 
         return PortfolioRebalanceExecutor(this).execute()
     }
@@ -45,7 +47,7 @@ data class PortfolioRebalanceCommand private constructor (
         private var inputSecurities: DataFrame<*>? = null
         private var lastRebalanceConstituents: DataFrame<*>? = null
 
-        fun customizeJsonMapper(jsonMapperBuilder: JsonMapper.Builder): Builder{
+        fun customizeJsonMapperForPortfolioConfiguration(jsonMapperBuilder: JsonMapper.Builder): Builder{
             JsonMapperProvider.reset()
             JsonMapperProvider.getJsonMapper(jsonMapperBuilder)
             return this
@@ -157,16 +159,5 @@ data class PortfolioRebalanceCommand private constructor (
 
             return PortfolioRebalanceCommand(portfolioConfiguration!!, rebalanceDate!!, inputSecurities!!, lastRebalanceConstituents)
         }
-
-        /**
-         *
-         * Copying DataFrame TypeClashTactic here for Java compatibility
-         */
-        public enum class TypeClashTactic {
-            ARRAY_AND_VALUE_COLUMNS,
-            ANY_COLUMNS,
-        }
     }
-
-
 }

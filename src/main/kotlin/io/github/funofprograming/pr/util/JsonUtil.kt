@@ -45,6 +45,18 @@ object JsonMapperProvider {
         if(mapperReference.get() == null){
             mapperReference.set(
                 jacksonMapperBuilder(initializer)
+                    .findAndAddModules()
+                    .addModule(JavaTimeModule())
+                    .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+                    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                    .disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                    .disable(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS)
+                    .disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
+                    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                    .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+                    .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+                    .enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)
+                    .serializationInclusion(JsonInclude.Include.NON_NULL)
                     .addModule(PortfolioConfigurationModule())
                     .build()
             )
@@ -104,10 +116,17 @@ inline fun toJson(inObject: Any?, jsonMapper: JsonMapper = JsonMapperProvider.ge
     }
 }
 
+inline fun <T> fromJson(json: String?, type: Class<T>?, jsonMapper: JsonMapper = JsonMapperProvider.getJsonMapper()): T? {
+    try {
+        return jsonMapper.readValue<T>(json ?: "", type)
+    } catch (e: JsonProcessingException) {
+        throw RuntimeException(e)
+    }
+}
+
 inline fun <reified T> fromJson(json: String?, jsonMapper: JsonMapper = JsonMapperProvider.getJsonMapper()): T? {
     try {
-        var jsonToUse = adjustJsonForParsingTemporal<T>(json)
-        return jsonMapper.readValue<T>(jsonToUse ?: "")
+        return jsonMapper.readValue<T>(json ?: "")
     } catch (e: JsonProcessingException) {
         throw RuntimeException(e)
     }
@@ -121,15 +140,15 @@ inline fun <reified T> fromJson(json: InputStream?, jsonMapper: JsonMapper = Jso
     }
 }
 
-inline fun <reified T> viaJson(source: Any?, jsonMapper: JsonMapper = JsonMapperProvider.getJsonMapper()): T {
+inline fun <reified T> viaJson(source: Any?, jsonMapper: JsonMapper = JsonMapperProvider.getJsonMapper()): T? {
     return jsonMapper.convertValue<T>(source)
 }
 
-inline fun <reified T> adjustJsonForParsingTemporal(json: String?): String? {
+inline fun <T> adjustJsonForParsingTemporal(json: String?, type: Class<T>?): String? {
 
     var jsonToUse = json
 
-    if(java.time.temporal.Temporal::class.java.isAssignableFrom(T::class.java)) { //for dates jackson wants extra "" inside the string
+    if(java.time.temporal.Temporal::class.java.isAssignableFrom(type)) { //for dates jackson wants extra "" inside the string
         jsonToUse = if (jsonToUse?.startsWith("\"") != true) "\""+jsonToUse else jsonToUse
         jsonToUse = if (jsonToUse?.endsWith("\"") != true) jsonToUse+"\"" else jsonToUse
     }
