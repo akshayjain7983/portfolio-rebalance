@@ -17,10 +17,7 @@ import io.github.funofprograming.pr.rule.mv.EquitiesMarketValueCalculator
 import io.github.funofprograming.pr.rule.mv.SecurityMarketValueCalculator
 import io.github.funofprograming.pr.rule.weight.MarketValueSecurityWeightCalculator
 import io.github.funofprograming.pr.rule.weight.SecurityWeightCalculator
-import io.github.funofprograming.pr.rule.weight.capping.EquityPortfolioAmountLimitSecurityWeightCapper
-import io.github.funofprograming.pr.rule.weight.capping.ProRataSecurityWeightCappingStrategy
-import io.github.funofprograming.pr.rule.weight.capping.SecurityWeightCapper
-import io.github.funofprograming.pr.rule.weight.capping.SecurityWeightCappingStrategy
+import io.github.funofprograming.pr.rule.weight.capping.*
 import io.github.funofprograming.pr.vo.PortfolioRebalanceCommand
 import org.jetbrains.kotlinx.dataframe.DataFrame
 import org.jetbrains.kotlinx.dataframe.DataRow
@@ -103,6 +100,7 @@ fun registerAllMarketValueCalculatorObjects() {
 
 fun registerAllSecurityWeightCapperObjects() {
     registerSecurityWeightCapper(EquityPortfolioAmountLimitSecurityWeightCapper)
+    registerSecurityWeightCapper(MarketValueSecurityWeightCapper)
 }
 
 fun registerAllSecurityWeightCappingStrategyObjects() {

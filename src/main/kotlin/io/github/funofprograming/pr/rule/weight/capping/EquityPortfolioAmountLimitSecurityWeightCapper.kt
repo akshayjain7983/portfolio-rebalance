@@ -35,11 +35,9 @@ object EquityPortfolioAmountLimitSecurityWeightCapper:SecurityWeightCapper {
                 val minRunLockedRebalanceUnits = row.getValueOrNull<Long>("min_run_locked_rebalance_units") ?: 0
                 val rebalanceUnitsCurrent = row.getValue<Long>("rebalance_units")
                 val rbUnitsRequired = (cappingToApply * BigDecimal.valueOf(rebalanceUnitsCurrent)).toLong()
-                val rbUnits = if(minRunLockedRebalanceUnits > rbUnitsRequired) minRunLockedRebalanceUnits else rbUnitsRequired
-                return@addOrUpdateColumnInDataFrame rbUnits
+                val rbUnitsFinal = if(minRunLockedRebalanceUnits > rbUnitsRequired) minRunLockedRebalanceUnits else rbUnitsRequired
+                return@addOrUpdateColumnInDataFrame rbUnitsFinal
             }
-
-
 
             securitiesResult = securitiesResult?.filter { sizeAttr() > BigDecimal.ZERO && rbUnits() > 0 }
         }

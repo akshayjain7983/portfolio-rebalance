@@ -73,6 +73,17 @@
               "securityWeightCappersWithParams": [
                 {
                   "securityWeightCapperId": "EquityPortfolioAmountLimitSecurityWeightCapper"
+                },
+                {
+                  "securityWeightCapperId": "MarketValueSecurityWeightCapper",
+                  "capperParams": {
+                    "weightCappingStrategyId": "ProRataSecurityWeightCappingStrategy",
+                    "marketValueWeightAttribute": "market_value_weight",
+                    "marketValueAttribute": "market_value",
+                    "capWeightsByGroup": {
+                      "level_1": 0.1
+                    }
+                  }
                 }
               ]
             }
